@@ -6,7 +6,7 @@ const SOC_MAX = 0.8
 const COEFFICIENTS = [-1.2918e+00, 9.6896e+00, -2.1023e+01, 1.9749e+01, -8.0028e+00, 1.6362e+00, 3.4722e+00]
 
 function fn_soc_ocv(soc)
-    return sum(coefficient * soc^power for (power, coefficient) in enumerate(reverse(COEFFICIENTS)))
+    return sum(coefficient * soc^(power-1) for (power, coefficient) in enumerate(reverse(COEFFICIENTS)))
 end
 
 function validate_soc(soc)
@@ -15,8 +15,9 @@ end
 
 function fn(soc, soc_ary, ary)
     soc = validate_soc(soc)
-    f = CubicSplineInterpolation((soc_ary,), ary, extrapolation_bc=Line())
-    return f(soc)
+    knots = (soc_ary,)
+    itp = interpolate(knots, ary, Gridded(Linear()))
+    return itp(soc)
 end
 
 function fn_r0(soc)
